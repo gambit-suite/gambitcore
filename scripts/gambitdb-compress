@@ -1,0 +1,306 @@
+#!/usr/bin/env python3
+
+
+import argparse
+import numpy as np
+import pandas as pd
+import sqlite3
+import shutil
+import logging
+from gambit.sigs import load_signatures, dump_signatures, AnnotatedSignatures, SignatureArray
+
+def parse_arguments():
+
+    parser = argparse.ArgumentParser(
+        description='Compresses a GAMBIT database by filtering out genomes based on specified criteria.',
+        usage='gambitdb-compress [options]',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # Required input files
+    parser.add_argument('signatures_filename', help='A signatures .h5 file created by gambit signatures', type=str)
+    parser.add_argument('database_filename', help='An sqlite database file created by gambit', type=str)
+
+    # Optional input parameters
+    parser.add_argument('--min_species_genomes', '-g', help='Minimum number of genomes in a species to consider, ignore the species below this', default=10, type=int)
+    parser.add_argument('--max_species_genomes', '-t', help='Max number of genomes in a species to consider, ignore all others above this', default=100, type=int)
+    parser.add_argument('--core_proportion', '-c', help='Proportion of genomes a kmer must be in for a species to be considered core', default=1, type=float)
+    parser.add_argument('--cpus', '-p', help='Number of cpus to use', type=int, default=1)
+    parser.add_argument('--num_genomes_per_species', '-r', help='Number of genomes to keep for a species (0 means keep all)', type=int, default=1)
+    parser.add_argument('--keep_species_under_minima',  help='Keep species under minima rather than removing them', action='store_true', default=False)
+
+    # Output
+    parser.add_argument('--signatures_output_filename', '-s', help='Output filename for genome signatures', default='filtered_database.gs', type=str)
+    parser.add_argument('--database_output_filename', '-d', help='Output filename for genome database', default='filtered_database.gdb', type=str)
+    parser.add_argument('--verbose', '-v', action='store_true', help='Turn on verbose output', default=False)
+
+    return parser.parse_args()
+
+def connect_to_db(db_name):
+    """
+    Connects to a SQLite database with the given name.
+
+    Args:
+        db_name (str): The name of the database to connect to.
+
+    Returns:
+        sqlite3.Connection: A connection object representing the database connection.
+    """
+    try:
+        return sqlite3.connect(db_name)
+    except sqlite3.Error as e:
+        logging.error(f"Error connecting to the database: {e}")
+        exit(1)
+
+def get_species_and_genomes_from_db(cursor):
+    """
+    Retrieves a dictionary of species names and their corresponding genbank accessions from the database.
+
+    Args:
+        cursor: A database cursor object.
+
+    Returns:
+        A dictionary where the keys are species names and the values are lists of genbank accessions.
+    """
+    try:
+        #cursor.execute("SELECT name FROM taxa WHERE rank = 'species'")
+        #species_list = [row[0] for row in cursor.fetchall()]
+
+        query = """
+            SELECT t.name AS species_name, GROUP_CONCAT(g.refseq_acc) AS genbank_accessions
+            FROM genomes g
+            JOIN genome_annotations ga ON g.id = ga.genome_id
+            JOIN taxa t ON ga.taxon_id = t.id AND t.rank = 'species'
+            GROUP BY t.name
+        """
+        cursor.execute(query)
+        results = cursor.fetchall()
+
+        return {row[0]: row[1].split(",") for row in results}
+    except sqlite3.Error as e:
+        logging.error(f"Database query error: {e}")
+        exit(1)
+
+def filter_species_by_genome_count(all_species_genomes, min_species_genomes):
+    """
+    Filters a dictionary of species and their associated genome accession numbers by a minimum number of genomes.
+
+    Args:
+        all_species_genomes (dict): A dictionary where the keys are species names and the values are lists of genome accession numbers.
+        min_species_genomes (int): The minimum number of genomes a species must have to be included in the filtered dictionary.
+
+    Returns:
+        tuple: A tuple of two dictionaries. The first dictionary contains the species that meet the minimum genome count, and their associated genome accession numbers. The second dictionary contains the species that do not meet the minimum genome count, and their associated genome accession numbers.
+    """
+    species_genomes = {species: genome_accs for species, genome_accs in all_species_genomes.items() if len(genome_accs) >= min_species_genomes}
+    species_genomes_skipped = {species: genome_accs for species, genome_accs in all_species_genomes.items() if len(genome_accs) < min_species_genomes}
+
+    return species_genomes, species_genomes_skipped
+
+def write_updated_signatures(core_src, core_src_ids, signatures_output_filename, src):
+    """
+    Write updated signatures to a file.
+
+    Args:
+        core_src (numpy.ndarray): The core source.
+        core_src_ids (list): The IDs of the core source.
+        signatures_output_filename (str): The filename of the output signatures.
+        src (AnnotatedSignatures): The annotated signatures.
+
+    Returns:
+        None
+    """
+    try:
+        core_src_sa = SignatureArray(core_src, kmerspec=src.kmerspec, dtype=src.dtype)
+        out_sigs = AnnotatedSignatures(core_src_sa, np.array(core_src_ids), src.meta)
+        dump_signatures(signatures_output_filename, out_sigs)
+    except Exception as e:
+        logging.error(f"Error writing signatures: {e}")
+        exit(1)
+
+def update_database(options, genomes_to_remove_from_db, core_src_ids):
+    """
+    Copies the input database file to a new output file, and removes any genomes from the output file
+    that are specified in the genomes_to_remove_from_db list.
+
+    Args:
+        options (Namespace): A namespace object containing the input and output database filenames.
+        genomes_to_remove_from_db (list): A list of strings representing GenBank accession numbers for genomes
+            that should be removed from the output database.
+
+    Returns:
+        None
+    """
+    try:
+        shutil.copy(options.database_filename, options.database_output_filename)
+
+        if len(genomes_to_remove_from_db) > 0:
+            updated_db_connection = sqlite3.connect(options.database_output_filename)
+            cursor = updated_db_connection.cursor()
+
+            cursor.execute("SELECT id FROM genomes WHERE refseq_acc IN ({})".format(','.join(['?']*len(genomes_to_remove_from_db))), genomes_to_remove_from_db)
+            genome_ids = [row[0] for row in cursor.fetchall()]
+
+            # If there are no genome_ids found, print a message and exit
+            if not genome_ids:
+                print("No genomes found with the provided refseq_acc values.")
+            else:
+                cursor.execute("DELETE FROM genome_annotations WHERE genome_id IN ({})".format(','.join(['?']*len(genome_ids))), genome_ids)
+                cursor.execute("DELETE FROM genomes WHERE refseq_acc IN ({})".format(','.join(['?']*len(genomes_to_remove_from_db))), genomes_to_remove_from_db)
+
+            updated_db_connection.commit()
+
+            # Some genomes werent being removed and causing inconsitencies in the database and signatures file. 
+            # Find all rows in the genomes table which are not in this list of genomes core_src_ids
+            cursor.execute("SELECT id FROM genomes WHERE refseq_acc NOT IN ({})".format(','.join(['?']*len(core_src_ids))), core_src_ids)
+            genome_ids = [row[0] for row in cursor.fetchall()]
+            if len(genome_ids) > 0 :
+                cursor.execute("DELETE FROM genome_annotations WHERE genome_id IN ({})".format(','.join(['?']*len(genome_ids))), genome_ids)
+                cursor.execute("DELETE FROM genomes WHERE id IN ({})".format(','.join(['?']*len(genome_ids))), genome_ids)
+            updated_db_connection.commit()
+
+
+            #  Remove any species or genus with zero genomes from the taxa table
+            cursor.execute("DELETE FROM taxa WHERE id NOT IN (SELECT taxon_id FROM genome_annotations)")
+            updated_db_connection.commit()
+            cursor.execute("VACUUM")
+            updated_db_connection.commit()
+
+            updated_db_connection.close()
+    except (shutil.Error, sqlite3.Error) as e:
+        logging.error(f"Database update error: {e}")
+        exit(1)
+
+def main():
+    """
+       This function is the main entry point of the script. It connects to a database, retrieves species and genomes data,
+    filters the data based on user-defined criteria, loads signatures from a file, processes the signatures to identify
+    core kmers, and writes the updated signatures to a new file. It also updates the database with the list of genomes
+    that were removed during the filtering process.
+
+    Args:
+        None
+
+    Returns:
+        None
+    """
+    options = parse_arguments()
+    validate_arguments(options)
+    validate_file_access(options.signatures_filename)
+    validate_file_access(options.database_filename)
+
+    # Setup logging
+    logging_level = logging.INFO if options.verbose else logging.WARNING
+    logging.basicConfig(level=logging_level, format='%(asctime)s - %(levelname)s - %(message)s')
+
+    logging.info("Connecting to database.")
+    main_db_connection = connect_to_db(options.database_filename)
+    cursor = main_db_connection.cursor()
+
+    all_species_genomes = get_species_and_genomes_from_db(cursor)
+    species_genomes, species_genomes_skipped = filter_species_by_genome_count(all_species_genomes, options.min_species_genomes)
+
+    genomes_to_remove_from_db = []
+
+    with load_signatures(options.signatures_filename) as src:
+        core_src = []
+        core_src_ids = []
+
+        filtered_src = calculate_core(options, species_genomes, genomes_to_remove_from_db, src, core_src, core_src_ids)
+
+        if options.keep_species_under_minima:
+            # Allow a pass through for species with not enough genomes for compression.
+            bypass_species(species_genomes_skipped, src, core_src, core_src_ids, filtered_src)
+        else:
+            # remove species genomes if they are under the minima
+            for species, genome_accs in species_genomes_skipped.items():
+                genomes_to_remove_from_db.extend(genome_accs)
+
+        logging.info("Writing updated signatures.")
+        write_updated_signatures(core_src, core_src_ids, options.signatures_output_filename, src)
+
+    logging.info("Updating database.")
+    update_database(options, genomes_to_remove_from_db, core_src_ids)
+
+    logging.info("Finished processing.")
+
+def bypass_species(species_genomes_skipped, src, core_src, core_src_ids, filtered_src):
+    for species, genome_accs in species_genomes_skipped.items():
+        print("Bypass: " + species)
+
+        for i in range(len(filtered_src)):
+            core_src.append(src[i])
+            core_src_ids.append(src.ids[i])
+
+def calculate_core(options, species_genomes, genomes_to_remove_from_db, src, core_src, core_src_ids):
+    for species, genome_accs_all in species_genomes.items():
+        print("Compress: " + species)
+
+        num_genomes = len(genome_accs_all)
+        genome_accs = genome_accs_all
+
+        # If you have large numbers of genomes for a species, you dont really need them all for the core calculation and can ignore the rest
+        if num_genomes > options.max_species_genomes:
+            genome_accs = genome_accs_all[:options.max_species_genomes]
+            num_genomes = len(genome_accs)
+
+            genome_acc_to_remove = genome_accs_all[options.max_species_genomes:]
+            for acc in genome_acc_to_remove:
+                genomes_to_remove_from_db.append(acc)
+
+        # get the indices of the genbank accessions we want to keep
+        in_gidxs = np.flatnonzero(np.in1d(src.ids,genome_accs))
+        filtered_src_ids = src.ids[in_gidxs]
+        filtered_src = src[in_gidxs]
+
+        data = np.array([])
+        for item in filtered_src:
+            data = np.append(data, item)
+
+        data_pd = pd.Series(data)
+        kmer_counts  = data_pd.value_counts()
+
+        core_kmers_counts = kmer_counts[kmer_counts >= round(num_genomes*options.core_proportion)]
+        core_kmers = core_kmers_counts.keys().astype(int)
+
+        logging.info("Core kmers for "+ species + ": " + str(len(core_kmers)))
+
+        num_genomes_per_species = num_genomes_per_species_threshold(options, filtered_src)
+        index_of_species_to_consider = min(num_genomes_per_species, len(filtered_src))
+
+        # Add each genomes kmers which are considered core to a temp array   
+        for i in range(index_of_species_to_consider):
+            core_src.append(filtered_src[i][np.in1d(filtered_src[i],core_kmers)])
+            core_src_ids.append(filtered_src_ids[i])
+
+        for i in range(index_of_species_to_consider, len(filtered_src)):
+            genomes_to_remove_from_db.append(filtered_src_ids[i])
+    return filtered_src
+
+def num_genomes_per_species_threshold(options, filtered_src):
+    num_genomes_per_species = options.num_genomes_per_species
+    if options.num_genomes_per_species == 0:
+        num_genomes_per_species = len(filtered_src)
+
+    return num_genomes_per_species
+
+def validate_arguments(args):
+    if not (0 <= args.core_proportion <= 1):
+        logging.error("The core_proportion argument must be between 0 and 1.")
+        exit(1)
+
+def validate_file_access(filename, mode="r"):
+    try:
+        with open(filename, mode):
+            pass
+    except FileNotFoundError:
+        logging.error(f"File not found: {filename}")
+        exit(1)
+    except PermissionError:
+        logging.error(f"Permission denied for file: {filename}")
+        exit(1)
+    except IOError as e:
+        logging.error(f"IOError accessing file {filename}: {e}")
+        exit(1)
+
+if __name__ == "__main__":
+    main()

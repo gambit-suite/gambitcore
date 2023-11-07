@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+
+import argparse
+import tempfile
+import os
+import json
+import numpy as np
+import logging
+
+import pandas as pd
+from gambitcore.DatabaseQueries import DatabaseQueries
+from gambitcore.GambitDatabase import GambitDatabase
+from gambit.sigs import load_signatures
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description='Given a database of core gambit signatures and FASTA files, output the number and percentage of core kmers found',
+        usage='gambit-core-check [options]',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # Required input files
+    parser.add_argument('gambit_directory', help='A directory containing GAMBIT files (database and signatures)', type=str)
+    parser.add_argument('fasta_filenames', help='A list of FASTA files of genomes', type=str, nargs='+')
+
+    # Optional input parameters
+    parser.add_argument('--extended', '-e', action='store_true', help='Extended output', default=False)
+    parser.add_argument('--cpus', '-p', help='Number of cpus to use', type=int, default=1)
+    parser.add_argument('--kmer',	 '-k', help='Length of the k-mer to use', type=int, default = 11)
+    parser.add_argument('--kmer_prefix', '-f', help='Kmer prefix', default = 'ATGAC', type=str)
+
+    parser.add_argument('--max_species_genomes', '-t', help='Max number of genomes in a species to consider, ignore all others above this', default=100, type=int)
+    parser.add_argument('--core_proportion', '-c', help='Proportion of genomes a kmer must be in for a species to be considered core', default=1, type=float)
+    parser.add_argument('--num_genomes_per_species', '-r', help='Number of genomes to keep for a species (0 means keep all)', type=int, default=1)
+
+    # Output
+    parser.add_argument('--verbose', '-v', action='store_true', help='Turn on verbose output', default=False)
+
+    return parser.parse_args()
+
+def run_gambit_core_check(gambit_directory, fasta_filename, cpus):
+    closest_accession = None
+    closest_distance = None
+    with tempfile.TemporaryDirectory() as temp_dir:
+        gambit_output = os.path.join(temp_dir, 'gambit_output.json')
+        os.system(f"gambit -d {gambit_directory} query --no-progress -o {gambit_output} -c {cpus} -f archive {fasta_filename}")
+
+        with open(gambit_output, 'r') as f:
+            data = json.load(f)
+            closest_genomes_json = data['items'][0]['classifier_result']['closest_match']
+            closest_accession = closest_genomes_json['genome']['key']
+            closest_distance = closest_genomes_json['distance']
+
+    logging.info(f"Filename: {fasta_filename}")
+    logging.info(f"Closest accession: {closest_accession}")
+    logging.info(f"Closest distance: {closest_distance}")
+
+    return closest_accession, closest_distance
+
+def intersection_kmers(core_kmers, genome_kmers):
+    return np.intersect1d(core_kmers, genome_kmers)
+
+def construct_extended_output(interection_of_kmers, core_kmers, closest_accession, closest_distance, fasta_filename, species):
+    completeness = len(interection_of_kmers) / len(core_kmers) * 100
+    output_values = [fasta_filename, species,  f"{completeness:.2f}%", f"({len(interection_of_kmers)}/{len(core_kmers)})", str(closest_accession), str(f"{closest_distance:.4f}")]
+    output_string = "\t".join(output_values)
+
+    logging.info(f"Filename: {fasta_filename}")
+    logging.info(f"Closest accession: {closest_accession}")
+    logging.info(f"Closest distance: {closest_distance}")
+    logging.info(f"Number of intersection kmers: {len(interection_of_kmers)}")
+    logging.info(f"Percentage of intersection kmers: {len(interection_of_kmers) / len(core_kmers) * 100}")
+    logging.info(f"Number of core kmers: {len(core_kmers)}")
+    return output_string
+
+def construct_consise_output(interection_of_kmers, core_kmers, fasta_filename, species):
+    completeness = len(interection_of_kmers) / len(core_kmers) * 100
+    return f"{fasta_filename}\t{species}\t{completeness:.2f}%"
+
+def calculate_core(core_proportion, max_species_genomes, num_genomes_per_species, species,genome_accs, src):
+    num_genomes = len(genome_accs)
+
+    # If you have large numbers of genomes for a species, you dont really need them all for the core calculation and can ignore the rest
+    if num_genomes > max_species_genomes:
+        genome_accs = genome_accs[:max_species_genomes]
+        num_genomes = len(genome_accs)
+
+    # get the indices of the genbank accessions we want to keep
+    in_gidxs = np.flatnonzero(np.in1d(src.ids,genome_accs))
+    filtered_src_ids = src.ids[in_gidxs]
+    filtered_src = src[in_gidxs]
+
+    data = np.array([])
+    for item in filtered_src:
+        data = np.append(data, item)
+
+    data_pd = pd.Series(data)
+    kmer_counts  = data_pd.value_counts()
+
+    core_kmers_counts = kmer_counts[kmer_counts >= round(num_genomes*core_proportion)]
+    core_kmers = core_kmers_counts.keys().astype(int)
+
+    logging.info("Core kmers for "+ species + ": " + str(len(core_kmers)))
+
+    num_genomes_per_species = num_genomes_per_species_threshold(num_genomes_per_species, filtered_src)
+    index_of_species_to_consider = min(num_genomes_per_species, len(filtered_src))
+
+    return filtered_src, filtered_src_ids
+
+def num_genomes_per_species_threshold(num_genomes_per_species, filtered_src):
+    num_genomes_per_species = num_genomes_per_species
+    if num_genomes_per_species == 0:
+        num_genomes_per_species = len(filtered_src)
+
+    return num_genomes_per_species
+
+def main():
+    options = parse_arguments()
+    database_filename, signatures_filename = GambitDatabase.find_gambit_files(options.gambit_directory)
+    if database_filename is None or  signatures_filename  is None:
+        raise Exception("Could not find database or signatures file in GAMBIT directory")
+    
+    # print headers
+    if options.extended:
+        print("Filename\tSpecies\tCompleteness (%)\tCore kmers\tClosest accession\tClosest distance")
+    else:
+        print("Filename\tSpecies\tCompleteness (%)")
+
+    with tempfile.TemporaryDirectory() as temp_dir:
+        signatures_output_filename = os.path.join(temp_dir, 'signatures_output_filename')
+        for fasta_filename in options.fasta_filenames:
+            logging.info(f"Processing {fasta_filename}")
+            closest_accession, closest_distance = run_gambit_core_check(options.gambit_directory, fasta_filename, options.cpus)
+
+            # create a core just of that species
+            db_queries = DatabaseQueries(database_filename)
+
+            cursor = db_queries.connect_to_db(database_filename)
+            species = db_queries.get_species_from_genomes_accession_from_db(cursor, closest_accession)
+            genome_accessions = db_queries.get_all_genomes_for_a_species_from_db(cursor, species)
+
+            with load_signatures(options.signatures_filename) as src:
+                filtered_src, filtered_src_ids = calculate_core(options.core_proportion, options.max_species_genomes, options.num_genomes_per_species, species, genome_accessions, src)
+
+                GambitDatabase.write_updated_signatures(filtered_src, filtered_src_ids, signatures_output_filename, src)
+
+            core_kmers = GambitDatabase.get_closest_kmers(closest_accession, signatures_output_filename)
+            genome_kmers = GambitDatabase.get_kmers_from_fasta(fasta_filename, options.kmer, options.kmer_prefix, options.cpus)
+            interection_of_kmers = intersection_kmers(core_kmers, genome_kmers)
+
+            if options.extended:
+                print(construct_extended_output(interection_of_kmers, core_kmers, closest_accession, closest_distance, fasta_filename, species))
+            else:
+                print(construct_consise_output(interection_of_kmers, core_kmers, fasta_filename, species))
+
+if __name__ == "__main__":
+    main()
