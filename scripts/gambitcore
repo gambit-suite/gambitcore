@@ -114,7 +114,7 @@ def calculate_core(core_proportion, max_species_genomes, num_genomes_per_species
         core_src.append(filtered_src[i][np.in1d(filtered_src[i],core_kmers)])
         core_src_ids.append(filtered_src_ids[i])
 
-    return core_src, core_src_ids
+    return core_src
 
 def num_genomes_per_species_threshold(num_genomes_per_species, filtered_src):
     num_genomes_per_species = num_genomes_per_species
@@ -136,30 +136,31 @@ def main():
     else:
         print("Filename\tSpecies\tCompleteness (%)")
 
-    with tempfile.TemporaryDirectory() as temp_dir:
-        signatures_output_filename = os.path.join(temp_dir, 'signatures_output_filename.gs')
-        for fasta_filename in options.fasta_filenames:
-            logging.info(f"Processing {fasta_filename}")
-            closest_accession, closest_distance = run_gambit_core_check(options.gambit_directory, fasta_filename, options.cpus)
+    for fasta_filename in options.fasta_filenames:
+        logging.info(f"Processing {fasta_filename}")
+        closest_accession, closest_distance = run_gambit_core_check(options.gambit_directory, fasta_filename, options.cpus)
 
-            # create a core just of that species
-            db_queries = DatabaseQueries(database_filename)
-            species = db_queries.get_species_from_genomes_accession_from_db(closest_accession)
-            genome_accessions = db_queries.get_all_genomes_for_a_species_from_db(species)
+        # create a core just of that species
+        db_queries = DatabaseQueries(database_filename)
+        species = db_queries.get_species_from_genomes_accession_from_db(closest_accession)
+        all_species_genome_accessions = db_queries.get_all_genomes_for_a_species_from_db(species)
 
-            with load_signatures(signatures_filename) as src:
-                filtered_src, filtered_src_ids = calculate_core(options.core_proportion, options.max_species_genomes, options.num_genomes_per_species, species, genome_accessions, src)
-                
-                gambit_database_obj.write_updated_signatures(filtered_src, filtered_src_ids, signatures_output_filename, src)
-            
-            core_kmers = gambit_database_obj.get_closest_kmers(closest_accession, signatures_output_filename)
-            genome_kmers = gambit_database_obj.get_kmers_from_fasta(fasta_filename, options.kmer, options.kmer_prefix, options.cpus)
-            interection_of_kmers = intersection_kmers(core_kmers, genome_kmers)
+        # check that the species is a key in the dictionary
+        if species not in all_species_genome_accessions:
+            raise Exception(f"Could not find species {species} in database")
+        genome_accessions = all_species_genome_accessions[species]
+        
+        core_kmers = []
+        with load_signatures(signatures_filename) as src:
+            core_kmers = calculate_core(options.core_proportion, options.max_species_genomes, options.num_genomes_per_species, species, genome_accessions, src)
+        
+        genome_kmers = gambit_database_obj.get_kmers_from_fasta(fasta_filename, options.kmer, options.kmer_prefix, options.cpus)
+        interection_of_kmers = intersection_kmers(core_kmers[0], genome_kmers)
 
-            if options.extended:
-                print(construct_extended_output(interection_of_kmers, core_kmers, closest_accession, closest_distance, fasta_filename, species))
-            else:
-                print(construct_consise_output(interection_of_kmers, core_kmers, fasta_filename, species))
+        if options.extended:
+            print(construct_extended_output(interection_of_kmers, core_kmers[0], closest_accession, closest_distance, fasta_filename, species))
+        else:
+            print(construct_consise_output(interection_of_kmers, core_kmers[0], fasta_filename, species))
 
 if __name__ == "__main__":
     main()

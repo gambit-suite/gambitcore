@@ -39,9 +39,6 @@ class GambitDatabase:
             return filtered_src
     
     def write_updated_signatures(self, core_src, core_src_ids, signatures_output_filename, src):
-        try:
-            core_src_sa = SignatureArray(core_src, kmerspec=src.kmerspec, dtype=src.dtype)
-            out_sigs = AnnotatedSignatures(core_src_sa, np.array(core_src_ids), src.meta)
-            dump_signatures(signatures_output_filename, out_sigs)
-        except Exception as e:
-            exit(1)
+        core_src_sa = SignatureArray(core_src, kmerspec=src.kmerspec, dtype=src.dtype)
+        out_sigs = AnnotatedSignatures(core_src_sa, np.array(core_src_ids), src.meta)
+        dump_signatures(signatures_output_filename, out_sigs)
