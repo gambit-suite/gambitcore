@@ -1,23 +1,25 @@
 import os
 import tempfile
 import numpy as np
+import logging
 from gambit.sigs import load_signatures, dump_signatures, AnnotatedSignatures, SignatureArray
 
 class GambitDatabase:
-    def __init__(self):
+    def __init__(self, gambit_directory):
+        self.gambit_directory = gambit_directory
         pass
 
     # given a GAMBIT directory, find the file ending in .gdb (the database) and the file ending in .gs (the signatures).
-    def find_gambit_files(self, gambit_directory):
-        gambit_files = os.listdir(gambit_directory)
+    def find_gambit_files(self):
+        gambit_files = os.listdir(self.gambit_directory)
         database_filename = None
         signatures_filename = None
 
         for filename in gambit_files:
             if filename.endswith('.gdb'):
-                database_filename = filename
+                database_filename = os.path.join(self.gambit_directory,filename)
             elif filename.endswith('.gs'):
-                signatures_filename = filename
+                signatures_filename = os.path.join(self.gambit_directory,filename)
 
         return database_filename, signatures_filename
 

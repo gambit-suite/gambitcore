@@ -20,14 +20,14 @@ if os.path.exists('VERSION'):
   version = open('VERSION').read().strip()
 
 setup(
-    name='gambitdb',
+    name='gambitcore',
     version=version,
-    description='gambitdb: a database of bacterial classification',
+    description='gambitcore: Calculate core genome completeness against a species',
 	long_description=read('README.md'),
     packages = find_packages(),
     author='Andrew J. Page',
     author_email='andrew.page@theiagen.com',
-    url='https://github.com/gambit-suite/gambitdb',
+    url='https://github.com/gambit-suite/gambitcore',
     scripts=glob.glob('scripts/*'),
     test_suite='nose.collector',
     tests_require=['nose >= 1.3'],
@@ -35,7 +35,6 @@ setup(
            'biopython >= 1.68',
            'pandas',
            'numpy',
-
        ],
     license='GPLv3',
     classifiers=[
