@@ -1,0 +1,156 @@
+#!/usr/bin/env python3
+
+import argparse
+import tempfile
+import os
+import json
+import numpy as np
+import logging
+import sys
+import pandas as pd
+sys.path.append('../')
+sys.path.append('./')
+from gambitcore.DatabaseQueries import DatabaseQueries
+from gambitcore.GambitDatabase import GambitDatabase
+from gambitcore.SpeciesKmers import SpeciesKmers
+from gambit.sigs import load_signatures
+
+def parse_arguments():
+    parser = argparse.ArgumentParser(
+        description='How complete is an assembly compared to the core genome of its species?',
+        usage='gambitcore [options]',
+        formatter_class=argparse.ArgumentDefaultsHelpFormatter)
+
+    # Required input files
+    parser.add_argument('gambit_directory', help='A directory containing GAMBIT files (database and signatures)', type=str)
+
+    # Optional input parameters
+    parser.add_argument('--species', '-s', help='Provide the name of a single species, default is to use everything in the database', type=str)
+    parser.add_argument('--cpus', '-p', help='Number of cpus to use', type=int, default=1)
+    parser.add_argument('--kmer',	 '-k', help='Length of the k-mer to use', type=int, default = 11)
+    parser.add_argument('--kmer_prefix', '-f', help='Kmer prefix', default = 'ATGAC', type=str)
+
+    parser.add_argument('--max_species_genomes', '-t', help='Max number of genomes in a species to consider, ignore all others above this', default=500, type=int)
+    parser.add_argument('--core_proportion', '-c', help='Proportion of genomes a kmer must be in for a species to be considered core', default=0.98, type=float)
+    parser.add_argument('--num_genomes_per_species', '-r', help='Number of genomes to keep for a species (0 means keep all)', type=int, default=1)
+
+    # Output
+    parser.add_argument('--verbose', '-v', action='store_true', help='Turn on verbose output', default=False)
+
+    return parser.parse_args()
+
+def run_gambit_core_check(gambit_directory, fasta_filename, cpus):
+    closest_accession = None
+    closest_distance = None
+    with tempfile.TemporaryDirectory() as temp_dir:
+        gambit_output = os.path.join(temp_dir, 'gambit_output.json')
+        os.system(f"gambit -d {gambit_directory} query --no-progress -o {gambit_output} -c {cpus} -f archive {fasta_filename}")
+
+        with open(gambit_output, 'r') as f:
+            data = json.load(f)
+            closest_genomes_json = data['items'][0]['classifier_result']['closest_match']
+            closest_accession = closest_genomes_json['genome']['key']
+            closest_distance = closest_genomes_json['distance']
+
+    logging.info(f"Filename: {fasta_filename}")
+    logging.info(f"Closest accession: {closest_accession}")
+    logging.info(f"Closest distance: {closest_distance}")
+
+    return closest_accession, closest_distance
+
+
+def construct_extended_output( core_kmers, species, species_kmers):
+    output_values = [species,  str(len(core_kmers)), str(round(species_kmers.genome_kmers_mean)), str(round(species_kmers.genome_kmers_std)), str(round(species_kmers.genome_kmers_min)), str(round(species_kmers.genome_kmers_max)), str(species_kmers.available_genomes), str(species_kmers.used_genomes)]
+    output_string = "\t".join(output_values)
+    
+    return output_string
+
+def calculate_core(core_proportion, max_species_genomes, num_genomes_per_species, species,genome_accs, src):
+    num_genomes = len(genome_accs)
+    available_genomes = num_genomes
+
+    # If you have large numbers of genomes for a species, you dont really need them all for the core calculation and can ignore the rest
+    if num_genomes > max_species_genomes:
+        genome_accs = genome_accs[:max_species_genomes]
+        num_genomes = len(genome_accs)
+
+    # get the indices of the genbank accessions we want to keep
+    in_gidxs = np.flatnonzero(np.in1d(src.ids,genome_accs))
+    filtered_src_ids = src.ids[in_gidxs]
+    filtered_src = src[in_gidxs]
+
+    core_src = []
+    core_src_ids = []
+
+    data = np.array([])
+    genome_kmers = np.array([])
+
+    for item in filtered_src:
+        genome_kmers = np.append(genome_kmers, len(item))
+        data = np.append(data, item)
+
+    data_pd = pd.Series(data)
+    kmer_counts  = data_pd.value_counts()
+    species_kmers = SpeciesKmers(genome_kmers, species)
+    species_kmers.available_genomes = available_genomes
+    species_kmers.used_genomes = num_genomes
+
+    core_kmers_counts = kmer_counts[kmer_counts >= round(num_genomes*core_proportion)]
+    core_kmers = core_kmers_counts.keys().astype(int)
+
+    logging.info("Core kmers for "+ species + ": " + str(len(core_kmers)))
+
+    num_genomes_per_species = num_genomes_per_species_threshold(num_genomes_per_species, filtered_src)
+    index_of_species_to_consider = min(num_genomes_per_species, len(filtered_src))
+
+    # Add each genomes kmers which are considered core to a temp array   
+    for i in range(index_of_species_to_consider):
+        core_src.append(filtered_src[i][np.in1d(filtered_src[i],core_kmers)])
+        core_src_ids.append(filtered_src_ids[i])
+
+    return core_src, species_kmers
+
+def num_genomes_per_species_threshold(num_genomes_per_species, filtered_src):
+    num_genomes_per_species = num_genomes_per_species
+    if num_genomes_per_species == 0:
+        num_genomes_per_species = len(filtered_src)
+
+    return num_genomes_per_species
+
+def main():
+    options = parse_arguments()
+    gambit_database_obj = GambitDatabase(options.gambit_directory)
+    database_filename, signatures_filename = gambit_database_obj.find_gambit_files()
+    if database_filename is None or  signatures_filename  is None:
+        raise Exception("Could not find database or signatures file in GAMBIT directory")
+    
+    db_queries = DatabaseQueries(database_filename)
+
+    # print headers
+    print("Species\tCore kmers\tMean Kmers\tKmers Std Dev\tMin Kmers\tMax Kmers\tAvailable Genomes\tUsed Genomes")
+
+    all_species = db_queries.get_all_species_from_db()
+
+    if options.species is not None:
+        all_species = [options.species]
+
+    for species in all_species:
+        # create a core just of that species
+        
+        all_species_genome_accessions = db_queries.get_all_genomes_for_a_species_from_db(species)
+
+        # check that the species is a key in the dictionary
+        if species not in all_species_genome_accessions:
+            print(f"Could not find species {species} in database")
+            continue
+        genome_accessions = all_species_genome_accessions[species]
+        
+        core_kmers = []
+        species_kmers = None
+        with load_signatures(signatures_filename) as src:
+            core_kmers, species_kmers = calculate_core(options.core_proportion, options.max_species_genomes, options.num_genomes_per_species, species, genome_accessions, src)
+        
+        print(construct_extended_output( core_kmers[0], species, species_kmers))
+
+if __name__ == "__main__":
+    main()

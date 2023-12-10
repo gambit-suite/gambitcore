@@ -6,6 +6,8 @@ class SpeciesKmers:
         self.genome_kmers = genome_kmers
         self.species = species
         self.calculate_species_core_kmers_stats(self.genome_kmers, self.species)
+        self.available_genomes = 0 
+        self.used_genomes = 0
 
     def calculate_species_core_kmers_stats(self, genome_kmers, species):
         self.genome_kmers = np.array(genome_kmers)

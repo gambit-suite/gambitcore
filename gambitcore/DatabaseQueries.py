@@ -26,6 +26,10 @@ class DatabaseQueries:
     
         return species_name_for_accession
     
+    def get_all_species_from_db(self):
+        taxa = [row[0] for row in self.cursor.execute("SELECT name FROM taxa WHERE rank LIKE 'species'  ORDER BY name ASC")]
+        return taxa
+
     def get_species_from_genomes_accession_from_db(self, genome_accession):
       try:
         query = """
