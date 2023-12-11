@@ -17,8 +17,8 @@ from gambit.sigs import load_signatures
 
 def parse_arguments():
     parser = argparse.ArgumentParser(
-        description='How complete is an assembly compared to the core genome of its species?',
-        usage='gambitcore [options]',
+        description='Kmer statistics for all species in a database. Warning it can take a long time to run.',
+        usage='gambitcore-species [options]',
         formatter_class=argparse.ArgumentDefaultsHelpFormatter)
 
     # Required input files
