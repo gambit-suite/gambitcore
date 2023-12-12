@@ -10,6 +10,9 @@ class SpeciesKmers:
         self.used_genomes = 0
 
     def calculate_species_core_kmers_stats(self, genome_kmers, species):
+        if len(genome_kmers) == 0:
+            logging.info(f"No genomes for {species} in the database")
+            return
         self.genome_kmers = np.array(genome_kmers)
         self.genome_kmers_mean = np.mean(genome_kmers)
         self.genome_kmers_std = np.std(genome_kmers)
