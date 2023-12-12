@@ -74,9 +74,9 @@ __verbose__: Turn on verbose output. This is set to False by default. This will 
 
 ### Output
 gambitcore will then output a tab delimited output to standard out that looks like this:
-| Filename                            | Species                       | Completeness (%)          | Closest accession   | Closest distance | Species Kmers Mean | Species Kmers Std Dev |
-|-------------------------------------|-------------------------------|---------------------------|---------------------|------------------|--------------------|-----------------------|
-| test/fasta/GCF_002800775.1.fna.gz   | Mycobacteroides abscessus     | 100.00% (5296/5296)       | GCF_000758385.1   | 0.0360              | 10635            | 403                |
+| Filename                            | Species                       | Completeness (%)          | Closest accession   | Closest distance | Assembly k-mers| Species k-mers Mean | Species k-mers Std Dev | Assembly QC |
+|-------------------------------------|-------------------------------|---------------------------|---------------------|------------------|----------------|---------------------|------------------------|-------------|
+| test/fasta/GCF_002800775.1.fna.gz   | Mycobacteroides abscessus     | 100.00% (5296/5296)       | GCF_000758385.1     | 0.0360           | 10847          | 10635               | 403                    | green       |
  
 To get a concise output then use the -e flag:
 
@@ -86,22 +86,26 @@ To get a concise output then use the -e flag:
 
 The columns are:
 
-__filename__: The name of the input FASTA file upon which the analysis was performed.
+__Filename__: The name of the input FASTA file upon which the analysis was performed.
 
-__species__: The predicted species from GAMBIT.
+__Species__: The predicted species from GAMBIT.
 
-__Completeness (%)__: This is the percentage of core kmers from the species found in the input assembly. A fully complete assembly should contain 100% of all the core kmers. It is normal that some kmers may not be present due to assembly errors, although a good quality assembly should be very close to 100%. The absolute number of core kmers found, and the number of core kmers expected, are in brackets. 
+__Completeness (%)__: This is the percentage of core k-mers from the species found in the input assembly. A fully complete assembly should contain 100% of all the core k-mers. It is normal that some k-mers may not be present due to assembly errors, although a good quality assembly should be very close to 100%. The absolute number of core k-mers found, and the number of core k-mers expected, are in brackets. 
 
-__closest accession__: This is the accession number of the genome from the database which is closest to the input assembly, as determined by GAMBIT. All GAMBIT kmers are used to calcuate this.
+__Closest accession__: This is the accession number of the genome from the database which is closest to the input assembly, as determined by GAMBIT. All GAMBIT k-mers are used to calcuate this.
 
-__closest distance__: The GAMBIT distance/diameter to the closest accession. This is a decimal number between 0 and 1, which a lower number indicating a closer match. All GAMBIT kmers are used to calcuate this.
+__Closest distance__: The GAMBIT distance/diameter to the closest accession. This is a decimal number between 0 and 1, which a lower number indicating a closer match. All GAMBIT k-mers are used to calcuate this.
 
-__species kmers mean__: The mean kmers for the species (all kmers, not just core ones). This gives you an indication of how large the core is compared to the mean kmers (roughly the average size). 
+__Assembly k-mers__: The total number of GAMBIT k-mers in the assembly. 
 
-__species kmers std dev__: The standard deviation of the number of kmers in a sample. 
+__Species k-mers mean__: The mean GAMBIT k-mers for the species (all GAMBIT k-mers, not just core ones). This gives you an indication of how large the core is compared to the mean k-mers (roughly the average size). 
+
+__Species k-mers std dev__: The standard deviation of the number of GABMIT k-mers in a sample. 
+
+__Assembly QC__: This is a colour coded output to give you an indication of the quality of the assembly. Green means the Assembly k-mers are within 1 standard deviation of the species k-mers mean.  Amber means the Assembly k-mers are between 1 and 2 standard deviations of the species k-mers mean. Red means the Assembly k-mers are more than 2 standard deviations of the species k-mers mean. This is a very rough guide, but it can be useful to quickly identify assemblies that are an unusual size relative to the species.
 
 ## gambitcore-species
-This is a script which takes in a GAMBIT database and calculates the core kmers for every species in the database. It then outputs the details for each species to a tab delimited file.
+This is a script which takes in a GAMBIT database and calculates the core k-mers for every species in the database. It then outputs the details for each species to a tab delimited file.
 
 The usage for the script is:
 ```
@@ -136,7 +140,7 @@ __species__: This is a single string containing a species name which will be use
 ### Output
 gambitcore-species will then output a tab delimited output to standard out that looks like this:
 
-| Species                      | Core kmers | Mean Kmers | Kmers Std Dev | Min Kmers | Max Kmers | Available Genomes | Used Genomes |
+| Species                      | Core k-mers | Mean k-mers | k-mers Std Dev | Min k-mers | Max k-mers | Available Genomes | Used Genomes |
 |------------------------------|------------|------------|---------------|-----------|-----------|-------------------|--------------|
 | Achromobacter xylosoxidans   | 4983       | 11076      | 365           | 10366     | 12167     | 133               | 133          |
 | Acinetobacter baumannii      | 3014       | 8542       | 221           | 7907      | 9410      | 1276              | 500          |
@@ -147,11 +151,11 @@ gambitcore-species will then output a tab delimited output to standard out that 
 
 The columns are as previous with the following additions:
 
-__min kmers__: The lowest number of kmers in a genome in the database for that species. If the min is far lower than the mean, accounting for the standard deviation, then it could indicate a highly variable species or assembly errors in the genomes in the database.
+__min k-mers__: The lowest number of k-mers in a genome in the database for that species. If the min is far lower than the mean, accounting for the standard deviation, then it could indicate a highly variable species or assembly errors in the genomes in the database.
 
-__max kmers__: The highest number of kmers in a genome in the database for that species. If the max is far higher than the mean, accounting for the standard deviation, then it could indicate a highly variable species or assembly errors in the genomes in the database.
+__max k-mers__: The highest number of k-mers in a genome in the database for that species. If the max is far higher than the mean, accounting for the standard deviation, then it could indicate a highly variable species or assembly errors in the genomes in the database.
 
 __available genomes__: This is the number of genomes in the database for the given species. 
 
-__used genomes__: The number of genomes used to generate the core kmers. This can be lower than the avialable genomes if the user supplied parameter is set. This parameter is used to reduce the overall running time.
+__used genomes__: The number of genomes used to generate the core k-mers. This can be lower than the avialable genomes if the user supplied parameter is set. This parameter is used to reduce the overall running time.
 

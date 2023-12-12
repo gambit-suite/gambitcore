@@ -62,9 +62,11 @@ def run_gambit_core_check(gambit_directory, fasta_filename, cpus):
 def intersection_kmers(core_kmers, genome_kmers):
     return np.intersect1d(core_kmers, genome_kmers)
 
-def construct_extended_output(interection_of_kmers, core_kmers, closest_accession, closest_distance, fasta_filename, species, species_kmers):
+def construct_extended_output(interection_of_kmers, core_kmers, closest_accession, closest_distance, fasta_filename, species, species_kmers, genome_kmers):
     completeness = len(interection_of_kmers) / len(core_kmers) * 100
-    output_values = [fasta_filename, species,  f"{completeness:.2f}%", f"({len(interection_of_kmers)}/{len(core_kmers)})", str(closest_accession), str(f"{closest_distance:.4f}"), str(round(species_kmers.genome_kmers_mean)), str(round(species_kmers.genome_kmers_std))]
+    assembly_qc = species_kmers.quality_control_rag_for_assembly(len(genome_kmers))
+
+    output_values = [fasta_filename, species,  f"{completeness:.2f}%", f"({len(interection_of_kmers)}/{len(core_kmers)})", str(closest_accession), str(f"{closest_distance:.4f}"), str(len(genome_kmers)),   str(round(species_kmers.genome_kmers_mean)), str(round(species_kmers.genome_kmers_std)), str(assembly_qc)]
     output_string = "\t".join(output_values)
 
     logging.info(f"Filename: {fasta_filename}")
@@ -143,7 +145,7 @@ def main():
     if options.concise:
         print("Filename\tSpecies\tCompleteness (%)")
     else:
-        print("Filename\tSpecies\tCompleteness (%)\tClosest accession\tClosest distance\tSpecies Kmers Mean\tSpecies Kmers Std Dev")
+        print("Filename\tSpecies\tCompleteness (%)\tClosest accession\tClosest distance\tAssembly Kmers\tSpecies Kmers Mean\tSpecies Kmers Std Dev\tAssembly QC")
 
     for fasta_filename in options.fasta_filenames:
         logging.info(f"Processing {fasta_filename}")
@@ -170,7 +172,7 @@ def main():
         if options.concise:
             print(construct_consise_output(interection_of_kmers, core_kmers[0], fasta_filename, species))
         else:
-            print(construct_extended_output(interection_of_kmers, core_kmers[0], closest_accession, closest_distance, fasta_filename, species, species_kmers))
+            print(construct_extended_output(interection_of_kmers, core_kmers[0], closest_accession, closest_distance, fasta_filename, species, species_kmers, genome_kmers))
 
 if __name__ == "__main__":
     main()

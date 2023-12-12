@@ -45,13 +45,36 @@ class DatabaseQueries:
         results = self.cursor.fetchall()
         # make sure the results array is not empty
         if len(results) == 0:
-            return None
+            return self.get_species_from_genomes_accession_considering_subspecies_from_db(genome_accession)
         species = results[0][0]
     
         return species
       except sqlite3.Error as e:
         logging.error(f"get_species_from_genomes_accession_from_db - Database query error: {e}")
         exit(1)
+
+    def get_species_from_genomes_accession_considering_subspecies_from_db(self, genome_accession):
+      try:
+        query = """
+          SELECT tparent.name AS species_name, GROUP_CONCAT(g.refseq_acc) AS genbank_accessions
+          FROM genomes g
+          JOIN genome_annotations ga ON g.id = ga.genome_id
+          JOIN taxa t ON ga.taxon_id = t.id AND t.rank IS NOT 'genus' AND t.rank IS NOT 'species' AND t.parent_id is NOT NULL AND t.parent_id != 0
+          JOIN taxa tparent ON t.parent_id = tparent.id AND tparent.rank = 'species' 
+          WHERE g.refseq_acc = ? 
+          GROUP BY t.name
+        """
+        self.cursor.execute(query, (genome_accession,))
+        results = self.cursor.fetchall()
+        # make sure the results array is not empty
+        if len(results) == 0:
+            return None
+        species = results[0][0]
+    
+        return species
+      except sqlite3.Error as e:
+        logging.error(f"get_species_from_genomes_accession_from_db - Database query error: {e}")
+        exit(1)    
     
     def connect_to_db(self, db_name):
         try:
