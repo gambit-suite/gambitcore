@@ -235,7 +235,6 @@ Aeromonas schubertii	5640	8079	129	7899	8223	6	6
 Aeromonas simiae	4385	7979	66	7903	8059	5	5
 Aeromonas sobria	4549	9358	190	9219	9735	5	5
 Aeromonas taiwanensis	5054	9268	523	8721	9888	7	7
-Could not find species Aeromonas veronii in database
 Aerophototrophica crusticola	6482	8274	1770	6504	10044	2	2
 Aestuariivivens marinum	2477	4812	104	4725	4959	3	3
 Aestuariivivens sediminicola	4784	7817	84	7733	7901	2	2
@@ -605,7 +604,6 @@ Bacillus marisflavi	9702	12766	43	12703	12824	4	4
 Bacillus megaterium	4842	10031	510	9123	11114	9	9
 Bacillus mesophilus	8146	8150	0	8149	8150	2	2
 Bacillus methanolicus	6105	6108	0	6107	6108	2	2
-Could not find species Bacillus mobilis in database
 Bacillus mojavensis	6953	10300	103	10147	10501	10	10
 Bacillus mycoides	2864	8626	358	7252	9886	105	105
 Bacillus nakamurai	7863	10247	156	10090	10474	4	4
@@ -629,14 +627,11 @@ Bacillus swezeyi	7736	12240	141	12124	12436	5	5
 Bacillus tequilensis	5771	9872	527	8966	10276	4	4
 Bacillus thermoamylovorans	5024	7492	74	7352	7544	5	5
 Bacillus thermotolerans	6435	7933	149	7723	8044	3	3
-Could not find species Bacillus thuringiensis in database
 Bacillus toyonensis	4680	9029	358	7756	10144	267	267
-Could not find species Bacillus tropicus in database
 Bacillus vallismortis	3737	10206	283	9642	10680	14	14
 Bacillus velezensis	4019	11453	239	10692	12215	608	500
 Bacillus vietnamensis	9136	12237	29	12208	12266	2	2
 Bacillus weihaiensis	5881	8944	413	8531	9357	2	2
-Could not find species Bacillus wiedmannii in database
 Bacillus xiamenensis	9231	10606	96	10491	10718	5	5
 Bacillus_A rhizoplanae	4060	7459	155	7304	7614	2	2
 Bacillus_AB infantis	4163	11267	217	10826	11631	9	9
@@ -912,7 +907,6 @@ Buchananella hordeovulneris	2821	3615	50	3561	3682	3	3
 Buchnera aphidicola	66	815	9	806	828	11	11
 Burkholderia aenigmatica	5856	11657	635	10817	12352	3	3
 Burkholderia ambifaria	2163	9231	427	7307	10240	90	90
-Could not find species Burkholderia anthina in database
 Burkholderia arboris	4947	10604	348	10242	11322	6	6
 Burkholderia cenocepacia	3968	9298	547	7483	11042	391	391
 Burkholderia cepacia	2920	10619	697	8255	12257	238	238
@@ -1208,7 +1202,6 @@ Clostridium acetobutylicum	3189	4557	158	4284	4655	4	4
 Clostridium autoethanogenum	5387	5430	33	5406	5477	3	3
 Clostridium baratii	1588	3182	62	3127	3268	3	3
 Clostridium beijerinckii	3566	6961	239	6786	7373	4	4
-Could not find species Clostridium botulinum in database
 Clostridium butyricum	2506	5403	138	5250	5760	12	12
 Clostridium carboxidivorans	4863	5840	673	4889	6351	3	3
 Clostridium celatum	3187	3567	33	3544	3613	3	3
@@ -1222,7 +1215,6 @@ Clostridium haemolyticum	2234	2432	65	2367	2497	2	2
 Clostridium kluyveri	4828	4838	10	4828	4847	2	2
 Clostridium neonatale	3690	5342	359	5080	6134	9	9
 Clostridium novyi	1373	2627	41	2545	2677	6	6
-Could not find species Clostridium paraputrificum in database
 Clostridium paraputrificum subspecies 1	2370	3812	120	3669	4085	14	14
 Clostridium paraputrificum subspecies 2	2455	3805	108	3670	4001	9	9
 Clostridium pasteurianum	4812	4814	2	4813	4816	2	2
@@ -1329,7 +1321,6 @@ Corynebacterium anserum	4752	5050	8	5042	5059	2	2
 Corynebacterium antarcticum	4910	5624	48	5562	5698	6	6
 Corynebacterium appendicis	2428	4032	60	3914	4072	5	5
 Corynebacterium argentoratense	2721	4151	25	4116	4187	9	9
-Could not find species Corynebacterium aurimucosum in database
 Corynebacterium auriscanis	3049	4707	149	4462	4828	4	4
 Corynebacterium belfantii	3543	4914	84	4717	5044	17	17
 Corynebacterium bovis	3648	5095	149	4655	5260	27	27
@@ -1638,7 +1629,6 @@ Ehrlichia muris	975	1651	15	1636	1666	2	2
 Ehrlichia ruminantium	1411	1997	19	1965	2016	4	4
 Eikenella corrodens	920	1820	40	1779	1860	2	2
 Eikenella longinqua	1491	1791	54	1737	1845	2	2
-Could not find species Eikenella shayeganii in database
 Eisenbergiella porci	4641	11560	449	10787	12090	7	7
 Eisenbergiella tayi	4718	13705	441	12906	14525	17	17
 Elizabethkingia anophelis	2067	5028	241	4430	5352	18	18
@@ -1660,14 +1650,11 @@ Enhydrobacter aerosaccus	4517	7942	164	7778	8105	2	2
 Enorma massiliensis	1675	4196	108	3981	4319	7	7
 Ensifer adhaerens	8631	16032	518	15220	17724	38	38
 Enterenecus faecium	2303	5484	134	5322	5711	5	5
-Could not find species Enterobacter asburiae in database
 Enterobacter bugandensis	3537	9130	310	8425	10496	153	153
 Enterobacter cancerogenus	5457	9467	310	8979	10228	18	18
 Enterobacter chengduensis	8699	10371	400	9809	11126	17	17
 Enterobacter chuandaensis	5027	8721	963	7209	9501	7	7
-Could not find species Enterobacter cloacae in database
 Enterobacter dykesii	7041	9000	148	8851	9148	2	2
-Could not find species Enterobacter hormaechei in database
 Enterobacter huaxiensis	7196	9607	144	9424	9828	4	4
 Enterobacter kobei	5634	10334	504	9496	11972	241	241
 Enterobacter ludwigii	5114	10625	506	9936	12222	100	100
@@ -1755,7 +1742,6 @@ Erythrobacter marinus	5309	5311	2	5309	5313	2	2
 Erythrobacter ramosus	5830	5946	114	5832	6059	2	2
 Erythrobacter sanguineus	4992	4995	3	4992	4998	2	2
 Escherichia albertii	5083	9830	342	9087	10439	32	32
-Could not find species Escherichia coli in database
 Escherichia fergusonii	6281	9772	256	9378	10167	6	6
 Escherichia marmotae	6364	9595	364	8862	10446	50	50
 Ethanoligenens harbinense	5345	5433	76	5351	5577	5	5
@@ -2510,7 +2496,6 @@ Legionella moravica	7440	7476	16	7459	7495	4	4
 Legionella nautarum	6500	6505	1	6504	6506	2	2
 Legionella oakridgensis	5794	6323	130	6192	6539	4	4
 Legionella parisiensis	7177	7198	3	7195	7202	4	4
-Could not find species Legionella pneumophila in database
 Legionella qingyii	6042	7010	879	6322	8250	3	3
 Legionella quateirensis	8324	8330	4	8327	8336	3	3
 Legionella quinlivanii	5765	6583	69	6501	6660	5	5
@@ -3014,8 +2999,6 @@ Moraxella nonliquefaciens	6090	8582	190	8238	8726	5	5
 Moraxella ovis	4246	7032	139	6833	7282	8	8
 Moraxella porci	3757	6472	121	6351	6593	2	2
 Moraxella_A atlantae	3498	6451	74	6313	6513	5	5
-Could not find species Morganella morganii in database
-Could not find species Morganella psychrotolerans in database
 Moritella marina	10704	10720	10	10710	10731	2	2
 Moritella viscosa	8272	11020	183	10744	11329	13	13
 Mucilaginibacter achroorhodeus	3272	5703	377	5326	6080	2	2
@@ -3219,10 +3202,8 @@ Neisseria lactamica	1131	3049	96	2812	3244	36	36
 Neisseria lisongii	1671	1672	1	1671	1673	2	2
 Neisseria macacae	4459	4469	12	4461	4486	3	3
 Neisseria meningitidis	1191	3205	57	3038	3430	2285	500
-Could not find species Neisseria mucosa in database
 Neisseria polysaccharea	2166	3077	31	3033	3153	12	12
 Neisseria shayeganii	1456	2453	76	2377	2529	2	2
-Could not find species Neisseria sicca in database
 Neisseria uirgultaei	2998	3151	27	3134	3207	9	9
 Neisseria viridiae	2636	3104	24	3080	3163	21	21
 Neisseria wadsworthii	1687	2665	34	2618	2692	3	3
@@ -3404,8 +3385,6 @@ Oceanobacillus polygoni	8105	8116	8	8108	8125	2	2
 Oceanobacillus profundus	6602	8134	221	7883	8439	4	4
 Oceanobacillus sojae_A	6407	7995	19	7976	8014	2	2
 Oceanospirillum linum	7317	7425	106	7319	7531	2	2
-Could not find species Ochrobactrum oryzae in database
-Could not find species Ochrobactrum pecoris in database
 Odoribacter laneus	4372	5739	282	5426	6057	5	5
 Odoribacter massiliensis	5554	7092	269	6711	7282	3	3
 Odoribacter splanchnicus	3765	7613	408	6809	8336	38	38
@@ -3921,7 +3900,6 @@ Pristimantibacillus agaridevorans	8502	20137	633	19273	20771	3	3
 Pristimantibacillus algorifonticola	16005	16070	42	16028	16113	2	2
 Pristimantibacillus castaneae	13011	13059	18	13041	13077	2	2
 Pristimantibacillus glycanilyticus	8213	14272	107	14146	14407	3	3
-Could not find species Prochlorococcus marinus in database
 Prolixibacter bellariivorans	9041	9064	0	9064	9065	2	2
 Promicromonospora citrea	6224	6244	8	6236	6251	2	2
 Propionibacterium acidifaciens	5870	6769	61	6708	6830	2	2
@@ -3939,12 +3917,9 @@ Proteus hauseri	5077	7005	68	6951	7101	3	3
 Proteus mirabilis	3255	7574	254	6839	8633	841	500
 Proteus penneri	5400	7371	207	7158	7690	10	10
 Proteus terrae	3326	7659	263	7223	8320	46	46
-Could not find species Proteus vulgaris in database
 Protochlamydia naegleriophila	5326	6175	29	6146	6204	2	2
-Could not find species Providencia alcalifaciens in database
 Providencia heimbachae	6959	9403	216	9229	9850	9	9
 Providencia huaxiensis	6726	9993	471	8939	10567	9	9
-Could not find species Providencia rettgeri in database
 Providencia rustigianii	4983	8698	269	8112	9113	21	21
 Providencia stuartii	6547	9624	417	7726	10641	47	47
 Providencia thailandensis	7159	9943	310	9533	10367	14	14
@@ -4023,7 +3998,6 @@ Pseudomonas abietaniphila	14888	14910	4	14906	14913	2	2
 Pseudomonas aeruginosa	4185	7576	536	6435	9327	1526	500
 Pseudomonas agarici	8855	9960	7	9953	9967	2	2
 Pseudomonas alcaligenes	419	7891	1739	5775	9753	4	4
-Could not find species Pseudomonas amygdali in database
 Pseudomonas avellanae	11597	12498	165	12284	12708	6	6
 Pseudomonas balearica	4662	6789	113	6629	6876	3	3
 Pseudomonas chlororaphis	2683	10315	403	9792	11042	11	11
@@ -4045,10 +4019,7 @@ Pseudomonas plecoglossicida	8624	9050	53	9002	9124	3	3
 Pseudomonas poae	7383	9375	387	8988	9762	2	2
 Pseudomonas psychrophila	9104	10604	244	10361	10848	2	2
 Pseudomonas psychrotolerans	3975	8778	177	8386	8999	12	12
-Could not find species Pseudomonas putida in database
-Could not find species Pseudomonas savastanoi in database
 Pseudomonas stutzeri	659	7838	460	7148	9056	14	14
-Could not find species Pseudomonas syringae in database
 Pseudomonas syringae group genomosp. 7	11785	13866	116	13751	13982	2	2
 Pseudomonas thermotolerans	3287	4016	21	3995	4037	2	2
 Pseudomonas tolaasii	9130	11016	752	10263	11768	2	2
@@ -4250,7 +4221,6 @@ Qipengyuania gaetbuli	2700	5350	246	5103	5596	2	2
 Qipengyuania nanhaisediminis	2606	5360	260	5100	5620	2	2
 Qipengyuania pacifica	2478	6475	290	5919	6770	5	5
 Qipengyuania xiapuensis	1699	4892	56	4787	4943	5	5
-Could not find species Quasibacillus thermotolerans in database
 Rahnella aquatilis	9848	12352	113	12273	12547	4	4
 Rahnella inusitata	9304	11031	517	10640	11762	3	3
 Rahnella laticis	4553	11938	395	11249	12448	6	6
@@ -4513,7 +4483,6 @@ Salinispora arenicola	2960	7486	208	7025	8009	44	44
 Salinispora fenicalii	5878	7128	174	6954	7301	2	2
 Salinispora mooreana	3562	6764	116	6630	6914	3	3
 Salinispora oceanensis	5646	6741	85	6623	6819	3	3
-Could not find species Salinispora pacifica in database
 Salinispora tropica	5136	7086	294	6751	7636	11	11
 Salinispora vitiensis	6267	6272	4	6268	6277	2	2
 Salinivibrio costicola	3662	7412	213	6934	7714	9	9
@@ -4617,8 +4586,6 @@ Shewanella seohaensis	3908	8060	294	7800	8471	3	3
 Shewanella waksmanii	8373	11546	186	11359	11732	2	2
 Shewanella woodyi	8692	11514	57	11457	11571	2	2
 Shewanella xiamenensis	3014	8567	434	7841	9600	33	33
-Could not find species Shigella boydii in database
-Could not find species Shigella dysenteriae in database
 Shigella flexneri	7275	9213	220	8332	10017	104	104
 Shigella sonnei	8219	9702	276	8608	10266	557	500
 Shimia marina	4988	8820	177	8632	9058	3	3
@@ -4872,7 +4839,6 @@ Streptococcus phocae	2929	4326	99	4227	4425	2	2
 Streptococcus pluranimalium	2725	4945	473	4296	5410	3	3
 Streptococcus pneumoniae	2057	4391	109	4144	4877	6801	500
 Streptococcus porcinus	3585	4353	154	4166	4576	7	7
-Could not find species Streptococcus pseudopneumoniae in database
 Streptococcus pseudoporcinus	4725	4784	12	4773	4796	2	2
 Streptococcus pyogenes	2720	4530	144	3288	4850	216	216
 Streptococcus ratti	4621	4650	0	4650	4650	2	2
@@ -5335,14 +5301,11 @@ Vibrio casei	7174	8389	94	8231	8478	4	4
 Vibrio celticus	10489	10508	6	10503	10516	3	3
 Vibrio chagasii	10353	10446	68	10357	10523	3	3
 Vibrio chemaguriensis	11188	12324	196	12127	12520	2	2
-Could not find species Vibrio cholerae in database
 Vibrio cidicii	4303	8356	145	8134	8565	6	6
 Vibrio cincinnatiensis	4445	7886	302	7500	8459	16	16
 Vibrio coralliilyticus	3053	12464	472	11539	13384	32	32
 Vibrio coralliirubri	2464	11104	517	10614	12702	13	13
 Vibrio cortegadensis	5296	9476	220	9095	9736	5	5
-Could not find species Vibrio crassostreae in database
-Could not find species Vibrio cyclitrophicus in database
 Vibrio diabolicus	2944	10850	384	9882	12482	75	75
 Vibrio diazotrophicus	3439	9759	275	9369	10325	8	8
 Vibrio echinoideorum	11305	11309	2	11307	11311	2	2
@@ -5366,11 +5329,9 @@ Vibrio lentus	2263	11233	553	9986	12897	96	96
 Vibrio litoralis	4808	7765	41	7724	7806	2	2
 Vibrio mangrovi	12088	12099	8	12091	12107	2	2
 Vibrio mediterranei	4571	13783	585	13194	15555	15	15
-Could not find species Vibrio metoecus in database
 Vibrio metschnikovii	2887	7840	369	7372	9341	45	45
 Vibrio mimicus	2813	7827	223	7155	8089	28	28
 Vibrio natriegens	3195	11080	409	10117	11782	14	14
-Could not find species Vibrio navarrensis in database
 Vibrio neptunius	6355	11718	99	11511	11782	8	8
 Vibrio nereis	8198	8210	10	8199	8220	2	2
 Vibrio nigripulchritudo	4150	12847	424	12116	13601	18	18
@@ -5532,3 +5493,38 @@ Zymomonas mobilis	2696	4854	164	4528	5093	9	9
 [Propionibacterium] humerusii	8239	8329	31	8295	8377	4	4
 [Ruminococcus] gnavus	3177	6329	295	5912	6552	3	3
 [Ruminococcus] lactaris	4209	5400	334	5067	5734	2	2
+Aeromonas veronii	986	8844	418	6943	10664	230	230
+Bacillus mobilis	3154	8713	198	8308	9195	18	18
+Bacillus thuringiensis	3850	9015	361	8128	10483	191	191
+Bacillus tropicus	2718	8524	415	8022	9707	32	32
+Bacillus wiedmannii	2220	8599	305	7980	9398	196	196
+Burkholderia anthina	2990	9255	656	7654	10389	13	13
+Clostridium botulinum	1	3677	350	2834	4345	112	112
+Clostridium paraputrificum	1391	3809	115	3669	4085	23	23
+Corynebacterium aurimucosum	2416	6604	92	6503	6715	7	7
+Enterobacter asburiae	2203	9709	628	8618	11104	257	257
+Enterobacter cloacae	915	10243	584	8335	11800	256	256
+Enterobacter hormaechei	3111	9720	391	8118	10886	2580	500
+Escherichia coli	3452	10724	372	9168	12092	4199	500
+Legionella pneumophila	2183	6696	175	6219	7463	971	500
+Morganella morganii	1215	9012	470	7833	10875	222	222
+Morganella psychrotolerans	2637	9709	200	9514	10019	4	4
+Neisseria mucosa	1229	4242	63	4178	4375	10	10
+Neisseria sicca	1504	4448	205	4232	4656	4	4
+Prochlorococcus marinus	3	3042	1075	2004	4906	29	29
+Proteus vulgaris	1863	7980	434	7205	8784	19	19
+Providencia alcalifaciens	1348	9266	372	8509	9857	38	38
+Providencia rettgeri	549	10139	405	9272	11352	189	189
+Pseudomonas amygdali	6642	13270	382	12522	14129	27	27
+Pseudomonas putida	772	10432	589	9530	11904	28	28
+Pseudomonas savastanoi	7672	13144	301	12650	13823	24	24
+Pseudomonas syringae	692	13312	336	12226	14047	112	112
+Salinispora pacifica	1351	6916	253	6334	7494	25	25
+Shigella boydii	7094	8923	219	8581	9467	13	13
+Shigella dysenteriae	5125	8640	339	8295	9259	6	6
+Streptococcus pseudopneumoniae	658	4439	95	4283	4620	11	11
+Vibrio cholerae	3248	7321	167	6417	8009	1608	500
+Vibrio crassostreae	1647	10690	638	9326	12905	169	169
+Vibrio cyclitrophicus	2280	10125	385	9722	11944	90	90
+Vibrio metoecus	2076	7412	113	7233	7650	28	28
+Vibrio navarrensis	2149	7936	540	7278	9115	27	27
