@@ -74,9 +74,9 @@ __verbose__: Turn on verbose output. This is set to False by default. This will 
 
 ### Output
 gambitcore will then output a tab delimited output to standard out that looks like this:
-| Filename                            | Species                       | Completeness (%)          | Closest accession   | Closest distance | Assembly k-mers| Species k-mers Mean | Species k-mers Std Dev | Assembly QC |
-|-------------------------------------|-------------------------------|---------------------------|---------------------|------------------|----------------|---------------------|------------------------|-------------|
-| test/fasta/GCF_002800775.1.fna.gz   | Mycobacteroides abscessus     | 100.00% (5296/5296)       | GCF_000758385.1     | 0.0360           | 10847          | 10635               | 403                    | green       |
+| Filename                            | Species                       | Completeness (%) | Assembly core/Species Core | Closest accession   | Closest distance | Assembly k-mers| Species k-mers Mean | Species k-mers Std Dev | Assembly QC |
+|-------------------------------------|-------------------------------|------------------|----------------------------|---------------------|------------------|----------------|---------------------|------------------------|-------------|
+| test/fasta/GCF_002800775.1.fna.gz   | Mycobacteroides abscessus     | 100.00%          | (5296/5296)                | GCF_000758385.1     | 0.0360           | 10847          | 10635               | 403                    | green       |
  
 To get a concise output then use the -e flag:
 
