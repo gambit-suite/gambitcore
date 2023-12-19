@@ -145,7 +145,7 @@ def main():
     if options.concise:
         print("Filename\tSpecies\tCompleteness (%)")
     else:
-        print("Filename\tSpecies\tCompleteness (%)\tClosest accession\tClosest distance\tAssembly Kmers\tSpecies Kmers Mean\tSpecies Kmers Std Dev\tAssembly QC")
+        print("Filename\tSpecies\tCompleteness (%)\tAssembly Core/species Core\tClosest accession\tClosest distance\tAssembly Kmers\tSpecies Kmers Mean\tSpecies Kmers Std Dev\tAssembly QC")
 
     for fasta_filename in options.fasta_filenames:
         logging.info(f"Processing {fasta_filename}")
