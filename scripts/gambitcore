@@ -28,12 +28,16 @@ def parse_arguments():
     # Optional input parameters
     parser.add_argument('--concise', '-e', action='store_true', help='concise output', default=False)
     parser.add_argument('--cpus', '-p', help='Number of cpus to use', type=int, default=1)
-    parser.add_argument('--kmer',	 '-k', help='Length of the k-mer to use', type=int, default = 11)
-    parser.add_argument('--kmer_prefix', '-f', help='Kmer prefix', default = 'ATGAC', type=str)
-
-    parser.add_argument('--max_species_genomes', '-t', help='Max number of genomes in a species to consider, ignore all others above this', default=500, type=int)
+    # You can change these 
+    parser.add_argument('--max_species_genomes', '-t', help='Max number of genomes in a species to consider, ignore all others above this', default=100000, type=int)
     parser.add_argument('--core_proportion', '-c', help='Proportion of genomes a kmer must be in for a species to be considered core', default=0.98, type=float)
-    parser.add_argument('--num_genomes_per_species', '-r', help='Number of genomes to keep for a species (0 means keep all)', type=int, default=1)
+
+    # Never change these. They must correspond to the values used in the database
+    parser.add_argument('--kmer',	 help='Length of the k-mer to use. Dont change these, must match database parameters.', type=int, default = 11)
+    parser.add_argument('--kmer_prefix',  help='Kmer prefix. Dont change these, must match database parameters.', default = 'ATGAC', type=str)
+
+    # Dont change this - its a placeholder to allow for future compression.
+    parser.add_argument('--num_genomes_per_species', '-r', help='Number of genomes to keep for a species (0 means keep all). Dont change this.', type=int, default=1)
 
     # Output
     parser.add_argument('--verbose', '-v', action='store_true', help='Turn on verbose output', default=False)

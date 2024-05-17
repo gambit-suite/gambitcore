@@ -31,8 +31,8 @@ class SpeciesKmers:
         quality_string = 'red'
         if num_assembly_kmers == 0 or self.genome_kmers_mean == 0:
             quality_string = "red"
-        elif num_assembly_kmers >= self.genome_kmers_mean - self.genome_kmers_std and num_assembly_kmers <= self.genome_kmers_mean + self.genome_kmers_std:
-            quality_string =  "green"
         elif num_assembly_kmers >= self.genome_kmers_mean - (2*self.genome_kmers_std) and num_assembly_kmers <= self.genome_kmers_mean + (2*self.genome_kmers_std):
+            quality_string =  "green"
+        elif num_assembly_kmers >= self.genome_kmers_mean - (3*self.genome_kmers_std) and num_assembly_kmers <= self.genome_kmers_mean + (3*self.genome_kmers_std):
             quality_string =  "amber"
         return quality_string
