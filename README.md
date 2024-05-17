@@ -102,7 +102,7 @@ __Species k-mers mean__: The mean GAMBIT k-mers for the species (all GAMBIT k-me
 
 __Species k-mers std dev__: The standard deviation of the number of GABMIT k-mers in a sample. 
 
-__Assembly QC__: This is a colour coded output to give you an indication of the quality of the assembly. Green means the Assembly k-mers are within 1 standard deviation of the species k-mers mean.  Amber means the Assembly k-mers are between 1 and 2 standard deviations of the species k-mers mean. Red means the Assembly k-mers are more than 2 standard deviations of the species k-mers mean. This is a very rough guide, but it can be useful to quickly identify assemblies that are an unusual size relative to the species.
+__Assembly QC__: This is a colour coded output to give you an indication of the quality of the assembly. Green means the Assembly k-mers are within 2 standard deviations (95%) of the species k-mers mean.  Amber means the Assembly k-mers are between 2 and 3 standard deviations (99.7%) of the species k-mers mean. Red means the Assembly k-mers are more than 3 standard deviations of the species k-mers mean and something might be very wrong. This is a very rough guide, but it can be useful to quickly identify assemblies that are an unusual size relative to the species.
 
 ## gambitcore-species
 This is a script which takes in a GAMBIT database and calculates the core k-mers for every species in the database. It then outputs the details for each species to a tab delimited file.
