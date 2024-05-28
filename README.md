@@ -1,7 +1,7 @@
 # GAMBITcore
 This application takes in assemblies, identifies the species, then calculates the completeness of the assemblies against the species core genome.  This is 
 a good quality control step. It is acheived by looking at the GAMBIT k-mers in the assembly and comparing them to the GAMBIT k-mers in the core genome. If the assembly is poor quality, it is expected that the completeness 
-of the assembly will be lower.  
+of the assembly will be lower.  If GAMBIT cannot make a species or subspecies level call, GAMBITcore will be skipped.
 
 ## Installation
 If you want to quickly try out the software, please use the docker container.
@@ -74,6 +74,7 @@ __verbose__: Turn on verbose output. This is set to False by default. This will 
 
 ### Output
 gambitcore will then output a tab delimited output to standard out that looks like this:
+
 | Filename                            | Species                       | Completeness (%) | Assembly core/Species Core | Closest accession   | Closest distance | Assembly k-mers| Species k-mers Mean | Species k-mers Std Dev | Assembly QC |
 |-------------------------------------|-------------------------------|------------------|----------------------------|---------------------|------------------|----------------|---------------------|------------------------|-------------|
 | test/fasta/GCF_002800775.1.fna.gz   | Mycobacteroides abscessus     | 100.00%          | (5296/5296)                | GCF_000758385.1     | 0.0360           | 10847          | 10635               | 403                    | green       |
@@ -103,6 +104,11 @@ __Species k-mers mean__: The mean GAMBIT k-mers for the species (all GAMBIT k-me
 __Species k-mers std dev__: The standard deviation of the number of GABMIT k-mers in a sample. 
 
 __Assembly QC__: This is a colour coded output to give you an indication of the quality of the assembly. Green means the Assembly k-mers are within 2 standard deviations (95%) of the species k-mers mean.  Amber means the Assembly k-mers are between 2 and 3 standard deviations (99.7%) of the species k-mers mean. Red means the Assembly k-mers are more than 3 standard deviations of the species k-mers mean and something might be very wrong. This is a very rough guide, but it can be useful to quickly identify assemblies that are an unusual size relative to the species.
+
+> :warning: Warning
+> 
+> If GAMBIT failes to make a species- or subspecies-level assignment, GAMBITcore will be skipped with the message "Species could not be identified, skipping core genome assessment". 
+
 
 ## gambitcore-species
 This is a script which takes in a GAMBIT database and calculates the core k-mers for every species in the database. It then outputs the details for each species to a tab delimited file.
