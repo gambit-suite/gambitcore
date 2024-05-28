@@ -49,39 +49,47 @@ def run_gambit_core_check(gambit_directory, fasta_filename, cpus):
     closest_distance = None
     with tempfile.TemporaryDirectory() as temp_dir:
         gambit_output = os.path.join(temp_dir, 'gambit_output.json')
-        os.system(f"gambit -d {gambit_directory} query --no-progress -o {gambit_output} -c {cpus} -f archive {fasta_filename}")
+        os.system(f"gambit -d {gambit_directory} query --no-progress -o {gambit_output} -c {cpus} -f json {fasta_filename}")
 
         with open(gambit_output, 'r') as f:
             data = json.load(f)
-            closest_genomes_json = data['items'][0]['classifier_result']['closest_match']
+            rank = data['items'][0]['predicted_taxon']['rank']
+            closest_genomes_json = data['items'][0]['closest_genomes'][0]
             closest_accession = closest_genomes_json['genome']['key']
             closest_distance = closest_genomes_json['distance']
 
     logging.info(f"Filename: {fasta_filename}")
     logging.info(f"Closest accession: {closest_accession}")
     logging.info(f"Closest distance: {closest_distance}")
-
-    return closest_accession, closest_distance
+    logging.info(f"Rank: {rank}")
+    return closest_accession, closest_distance, rank
 
 def intersection_kmers(core_kmers, genome_kmers):
     return np.intersect1d(core_kmers, genome_kmers)
 
 def construct_extended_output(interection_of_kmers, core_kmers, closest_accession, closest_distance, fasta_filename, species, species_kmers, genome_kmers):
-    completeness = len(interection_of_kmers) / len(core_kmers) * 100
-    assembly_qc = species_kmers.quality_control_rag_for_assembly(len(genome_kmers))
 
-    output_values = [fasta_filename, species,  f"{completeness:.2f}%", f"({len(interection_of_kmers)}/{len(core_kmers)})", str(closest_accession), str(f"{closest_distance:.4f}"), str(len(genome_kmers)),   str(round(species_kmers.genome_kmers_mean)), str(round(species_kmers.genome_kmers_std)), str(assembly_qc)]
-    output_string = "\t".join(output_values)
+    if species == "Species could not be identified, skipping core genome assessment":
+        output_values = [fasta_filename, species,  "NA", "NA", "NA", "NA", "NA", "NA", "NA", "NA"]
+        output_string = "\t".join(output_values)
+    else:
+        completeness = len(interection_of_kmers) / len(core_kmers) * 100
+        assembly_qc = species_kmers.quality_control_rag_for_assembly(len(genome_kmers))
 
-    logging.info(f"Filename: {fasta_filename}")
-    logging.info(f"Closest accession: {closest_accession}")
-    logging.info(f"Closest distance: {closest_distance}")
-    logging.info(f"Number of intersection kmers: {len(interection_of_kmers)}")
-    logging.info(f"Percentage of intersection kmers: {len(interection_of_kmers) / len(core_kmers) * 100}")
-    logging.info(f"Number of core kmers: {len(core_kmers)}")
+        output_values = [fasta_filename, species,  f"{completeness:.2f}%", f"({len(interection_of_kmers)}/{len(core_kmers)})", str(closest_accession), str(f"{closest_distance:.4f}"), str(len(genome_kmers)),   str(round(species_kmers.genome_kmers_mean)), str(round(species_kmers.genome_kmers_std)), str(assembly_qc)]
+        output_string = "\t".join(output_values)
+
+        logging.info(f"Filename: {fasta_filename}")
+        logging.info(f"Closest accession: {closest_accession}")
+        logging.info(f"Closest distance: {closest_distance}")
+        logging.info(f"Number of intersection kmers: {len(interection_of_kmers)}")
+        logging.info(f"Percentage of intersection kmers: {len(interection_of_kmers) / len(core_kmers) * 100}")
+        logging.info(f"Number of core kmers: {len(core_kmers)}")
     return output_string
 
 def construct_consise_output(interection_of_kmers, core_kmers, fasta_filename, species):
+    if species == "Species could not be identified, skipping core genome assessment":
+        return f"{fasta_filename}\t{species}\tNA"
     completeness = len(interection_of_kmers) / len(core_kmers) * 100
     return f"{fasta_filename}\t{species}\t{completeness:.2f}%"
 
@@ -153,30 +161,40 @@ def main():
 
     for fasta_filename in options.fasta_filenames:
         logging.info(f"Processing {fasta_filename}")
-        closest_accession, closest_distance = run_gambit_core_check(options.gambit_directory, fasta_filename, options.cpus)
+        closest_accession, closest_distance, rank = run_gambit_core_check(options.gambit_directory, fasta_filename, options.cpus)
 
-        # create a core just of that species
-        db_queries = DatabaseQueries(database_filename)
-        species = db_queries.get_species_from_genomes_accession_from_db(closest_accession)
-        all_species_genome_accessions = db_queries.get_all_genomes_for_a_species_from_db(species)
+        if rank == 'species' or rank == 'subspecies':
 
-        # check that the species is a key in the dictionary
-        if species not in all_species_genome_accessions:
-            raise Exception(f"Could not find species {species} in database")
-        genome_accessions = all_species_genome_accessions[species]
-        
-        core_kmers = []
-        species_kmers = None
-        with load_signatures(signatures_filename) as src:
-            core_kmers, species_kmers = calculate_core(options.core_proportion, options.max_species_genomes, options.num_genomes_per_species, species, genome_accessions, src)
-        
-        genome_kmers = gambit_database_obj.get_kmers_from_fasta(fasta_filename, options.kmer, options.kmer_prefix, options.cpus)
-        interection_of_kmers = intersection_kmers(core_kmers[0], genome_kmers)
+            # create a core just of that species
+            db_queries = DatabaseQueries(database_filename)
+            species = db_queries.get_species_from_genomes_accession_from_db(closest_accession)
+            all_species_genome_accessions = db_queries.get_all_genomes_for_a_species_from_db(species)
 
-        if options.concise:
-            print(construct_consise_output(interection_of_kmers, core_kmers[0], fasta_filename, species))
+            # check that the species is a key in the dictionary
+            if species not in all_species_genome_accessions:
+                raise Exception(f"Could not find species {species} in database")
+            genome_accessions = all_species_genome_accessions[species]
+            
+            core_kmers = []
+            species_kmers = None
+            with load_signatures(signatures_filename) as src:
+                core_kmers, species_kmers = calculate_core(options.core_proportion, options.max_species_genomes, options.num_genomes_per_species, species, genome_accessions, src)
+            
+            genome_kmers = gambit_database_obj.get_kmers_from_fasta(fasta_filename, options.kmer, options.kmer_prefix, options.cpus)
+            interection_of_kmers = intersection_kmers(core_kmers[0], genome_kmers)
+
+            if options.concise:
+                print(construct_consise_output(interection_of_kmers, core_kmers[0], fasta_filename, species))
+            else:
+                print(construct_extended_output(interection_of_kmers, core_kmers[0], closest_accession, closest_distance, fasta_filename, species, species_kmers, genome_kmers))
+
         else:
-            print(construct_extended_output(interection_of_kmers, core_kmers[0], closest_accession, closest_distance, fasta_filename, species, species_kmers, genome_kmers))
+            logging.info(f"Skipping {fasta_filename} as it is not a species or subspecies call")
+
+            if options.concise:
+                print(construct_consise_output(0, 0, fasta_filename, "Species could not be identified, skipping core genome assessment"))
+            else:
+                print(construct_extended_output(0, 0, 0, 0, fasta_filename, "Species could not be identified, skipping core genome assessment", 0, 0))
 
 if __name__ == "__main__":
     main()
