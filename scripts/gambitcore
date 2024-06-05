@@ -42,6 +42,9 @@ def parse_arguments():
     # Output
     parser.add_argument('--verbose', '-v', action='store_true', help='Turn on verbose output', default=False)
 
+    # Version
+    parser.add_argument('--version', action='version', version='%(prog)s 0.0.2')
+
     return parser.parse_args()
 
 def run_gambit_core_check(gambit_directory, fasta_filename, cpus):
