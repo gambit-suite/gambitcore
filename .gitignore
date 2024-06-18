@@ -162,11 +162,15 @@ cython_debug/
 # Testing directory
 output_dir
 output_databases
+
 # notes
 method
 correct_incorrect_predictions.txt
 results.csv
 output_logfile.txt
 
+# data
+*.fasta
+*.json
 *.gz
 *.gdb
