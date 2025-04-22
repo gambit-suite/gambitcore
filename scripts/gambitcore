@@ -10,6 +10,7 @@ import sys
 import pandas as pd
 sys.path.append('../')
 sys.path.append('./')
+from gambitcore.__version__ import __version__
 from gambitcore.DatabaseQueries import DatabaseQueries
 from gambitcore.GambitDatabase import GambitDatabase
 from gambitcore.SpeciesKmers import SpeciesKmers
@@ -43,23 +44,36 @@ def parse_arguments():
     parser.add_argument('--verbose', '-v', action='store_true', help='Turn on verbose output', default=False)
 
     # Version
-    parser.add_argument('--version', action='version', version='%(prog)s 0.0.2')
+    parser.add_argument('--version', action='version', version=f'%(prog)s {__version__}')
 
     return parser.parse_args()
 
 def run_gambit_core_check(gambit_directory, fasta_filename, cpus):
     closest_accession = None
     closest_distance = None
+    rank = "Unknown"
+
     with tempfile.TemporaryDirectory() as temp_dir:
         gambit_output = os.path.join(temp_dir, 'gambit_output.json')
         os.system(f"gambit -d {gambit_directory} query --no-progress -o {gambit_output} -c {cpus} -f json {fasta_filename}")
 
         with open(gambit_output, 'r') as f:
             data = json.load(f)
-            rank = data['items'][0]['predicted_taxon']['rank']
-            closest_genomes_json = data['items'][0]['closest_genomes'][0]
-            closest_accession = closest_genomes_json['genome']['key']
-            closest_distance = closest_genomes_json['distance']
+            item = data.get('items', [{}])[0]
+
+            predicted_taxon = item.get('predicted_taxon')
+            if predicted_taxon:
+                rank = predicted_taxon.get('rank')
+            else:
+                logging.warning(f"No predicted taxon found for: {fasta_filename}")
+
+            closest_genomes = item.get('closest_genomes')
+            if closest_genomes:
+                closest_genome = closest_genomes[0]
+                closest_accession = closest_genome.get('genome', {}).get('key')
+                closest_distance = closest_genome.get('distance')
+            else:
+                logging.warning(f"No closest genomes found for: {fasta_filename}")
 
     logging.info(f"Filename: {fasta_filename}")
     logging.info(f"Closest accession: {closest_accession}")
