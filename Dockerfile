@@ -1,34 +1,39 @@
-# Software installation, no database files
-FROM mambaorg/micromamba:jammy as app_base
+FROM python:3.10-slim
 
-LABEL base.image="mambaorg/micromamba:0.27.0"
-LABEL dockerfile.version="1"
 LABEL software="gambitcore"
-LABEL software.version=${gambitcore_SOFTWARE_VERSION}
-LABEL description="How complete is an assembly compared to the core genome of its species?"
+LABEL description="Core genome completeness analysis"
 LABEL website="https://github.com/gambit-suite/gambitcore"
-LABEL license="https://github.com/gambit-suite/gambitcore/blob/master/LICENSE"
-LABEL maintainer1="Andrew Page"
-LABEL maintainer.email1="andrew.page@theiagen.com"
+LABEL license="MIT"
+LABEL maintainer="Andrew Page <andrew.page@theiagen.com>"
 
-# Environment
+ENV PYTHONDONTWRITEBYTECODE=1
+ENV PYTHONUNBUFFERED=1
 ENV LC_ALL=C.UTF-8
-USER root
 
-# Install mamba environment
-COPY --chown=$MAMBA_USER:$MAMBA_USER env.yaml /tmp/env.yaml
-RUN micromamba install -y -n base -f /tmp/env.yaml && \
-    micromamba clean --all --yes
+# Install system dependencies
+RUN apt-get update && apt-get install -y --no-install-recommends \
+    build-essential \
+    gcc-10 \
+    g++-10 \
+    zlib1g-dev \
+    curl \
+    git \
+    ca-certificates \
+    procps \
+ && rm -rf /var/lib/apt/lists/*
 
-ARG MAMBA_DOCKERFILE_ACTIVATE=1  # Subsequent RUN commands use environment
+# Set GCC 10 as default
+RUN update-alternatives --install /usr/bin/gcc gcc /usr/bin/gcc-10 100 \
+ && update-alternatives --install /usr/bin/g++ g++ /usr/bin/g++-10 100
 
-RUN micromamba install -c conda-forge -y zlib sqlite
-RUN micromamba install -c bioconda -c conda-forge -y gambit
+# Upgrade pip and install gambit + numpy
+RUN pip install --upgrade pip setuptools wheel \
+ && pip install https://github.com/jlumpe/gambit/archive/refs/tags/v1.1.0.tar.gz
 
-# Install gambitcore
-ADD . /gambitcore
+# Copy and install gambitcore
 WORKDIR /gambitcore
-RUN pip3 install .
+COPY . /gambitcore
+RUN pip install .
 
-# Make sure conda, python, and gambitcore are in the path
-ENV PATH="/opt/conda/bin:${PATH}"
+# Set working directory
+WORKDIR /data
