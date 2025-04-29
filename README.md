@@ -7,8 +7,16 @@ of the assembly will be lower.  If GAMBIT cannot make a species or subspecies le
 If you want to quickly try out the software, please use the docker container.
 
 ### Dependencies
-* Python 3.9 or higher
+* Python 3.10 or higher
 * GAMBIT
+
+### Conda
+![ananconda-version](https://anaconda.org/bioconda/gambitcore/badges/version.svg)
+![conda-platform](https://anaconda.org/bioconda/gambitcore/badges/platforms.svg)
+![last-update](https://anaconda.org/bioconda/gambitcore/badges/latest_release_date.svg)
+```
+conda install -c conda-forge -c bioconda gambitcore
+```
 
 ### Docker
 To build the container, run this command from the root of the repository:
