@@ -1,10 +1,9 @@
 # Software installation, no database files
-FROM mambaorg/micromamba:jammy as app_base
+FROM mambaorg/micromamba:jammy AS app_base
 
 LABEL base.image="mambaorg/micromamba:0.27.0"
 LABEL dockerfile.version="1"
 LABEL software="gambitcore"
-LABEL software.version=${gambitcore_SOFTWARE_VERSION}
 LABEL description="How complete is an assembly compared to the core genome of its species?"
 LABEL website="https://github.com/gambit-suite/gambitcore"
 LABEL license="https://github.com/gambit-suite/gambitcore/blob/master/LICENSE"
